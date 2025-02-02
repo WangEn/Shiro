@@ -22,12 +22,12 @@ export const login = async (username?: string, password?: string) => {
       throw err
     })
     if (user) {
-      const token = user.token
+      const { token } = user
       setToken(token)
       jotaiStore.set(isLoggedAtom, true)
 
       await fetchAppUrl()
-      toast(`欢迎回来，${jotaiStore.get(ownerAtom)?.name}`, 'success')
+      toast.success(`欢迎回来，${jotaiStore.get(ownerAtom)?.name}`)
     }
 
     return true
@@ -55,7 +55,6 @@ export const login = async (username?: string, password?: string) => {
   }
 
   await refreshToken()
-  toast(`欢迎回来，${jotaiStore.get(ownerAtom)?.name}`, 'success')
 
   return true
 }

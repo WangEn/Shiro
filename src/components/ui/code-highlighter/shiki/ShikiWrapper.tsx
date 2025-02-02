@@ -1,3 +1,7 @@
+import clsx from 'clsx'
+import type { Variants } from 'motion/react'
+import { AnimatePresence, m } from 'motion/react'
+import type { PropsWithChildren } from 'react'
 import {
   forwardRef,
   useCallback,
@@ -7,10 +11,6 @@ import {
   useRef,
   useState,
 } from 'react'
-import clsx from 'clsx'
-import { AnimatePresence, m } from 'framer-motion'
-import type { Variants } from 'framer-motion'
-import type { PropsWithChildren } from 'react'
 
 import { getViewport } from '~/atoms/hooks'
 import { AutoResizeHeight } from '~/components/modules/shared/AutoResizeHeight'
@@ -77,6 +77,7 @@ export const ShikiHighLighterWrapper = forwardRef<
 
   const [isCollapsed, setIsCollapsed] = useState(shouldCollapsed)
   const [isOverflow, setIsOverflow] = useState(false)
+
   useEffect(() => {
     if (!shouldCollapsed) {
       return
@@ -88,12 +89,13 @@ export const ShikiHighLighterWrapper = forwardRef<
     const windowHeight = getViewport().h
     const halfWindowHeight = windowHeight / 2
     const $elScrollHeight = $el.scrollHeight
+
     if ($elScrollHeight >= halfWindowHeight) {
       setIsOverflow(true)
 
       const $hightlighted = $el.querySelector('.highlighted')
       if ($hightlighted) {
-        const lineHeight = parseInt(
+        const lineHeight = Number.parseInt(
           getComputedStyle($hightlighted).height || '0',
           10,
         )
@@ -109,9 +111,7 @@ export const ShikiHighLighterWrapper = forwardRef<
     }
   }, [value, codeBlockRef])
 
-  const filename = useMemo(() => {
-    return parseFilenameFromAttrs(attrs || '')
-  }, [attrs])
+  const filename = useMemo(() => parseFilenameFromAttrs(attrs || ''), [attrs])
   const [, maskClassName] = useMaskScrollArea({
     element: codeBlockRef!,
     size: 'lg',
@@ -155,13 +155,13 @@ export const ShikiHighLighterWrapper = forwardRef<
             {copied ? (
               <m.i
                 key={'copied'}
-                className="icon-[mingcute--check-line] size-4"
+                className="i-mingcute-check-line size-4"
                 {...copyIconVariants}
               />
             ) : (
               <m.i
                 key={'copy'}
-                className="icon-[mingcute--copy-2-fill] size-4"
+                className="i-mingcute-copy-2-fill size-4"
                 {...copyIconVariants}
               />
             )}
@@ -199,7 +199,8 @@ export const ShikiHighLighterWrapper = forwardRef<
           {isOverflow && isCollapsed && (
             <div
               className={`absolute inset-x-0 bottom-0 flex justify-center py-2 duration-200 ${
-                ['mask-both-lg', 'mask-b-lg'].includes(maskClassName)
+                maskClassName.includes('mask-both') ||
+                maskClassName.includes('mask-b')
                   ? ''
                   : 'pointer-events-none opacity-0'
               }`}
@@ -209,7 +210,7 @@ export const ShikiHighLighterWrapper = forwardRef<
                 aria-hidden
                 className="flex items-center justify-center text-xs"
               >
-                <i className="icon-[mingcute--arrow-to-down-line]" />
+                <i className="i-mingcute-arrow-to-down-line" />
                 <span className="ml-2">展开</span>
               </button>
             </div>

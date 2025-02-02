@@ -1,11 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ToastContainer } from 'react-toastify'
 import { ThemeProvider } from 'next-themes'
 import type { DocumentComponent } from 'storybook/typings'
 
 import { useRefValue } from '~/hooks/common/use-ref-value'
 
 import { ModalStackProvider } from '../modal'
+import { Toaster } from '../toast'
 import demo from './demo.json'
 import { Excalidraw } from './Excalidraw'
 
@@ -21,11 +21,10 @@ export const Draw: DocumentComponent = () => {
         </main>
       </ModalStackProvider>
 
-      <ToastContainer />
+      <Toaster />
     </ThemeProvider>
   )
 }
-
 Draw.meta = {
   title: 'Excalidraw',
 }

@@ -1,6 +1,3 @@
-import { queryClient } from '~/providers/root/react-query-provider'
-import React from 'react'
-import { produce } from 'immer'
 import type {
   CommentModel,
   NoteModel,
@@ -11,16 +8,12 @@ import type {
 } from '@mx-space/api-client'
 import type { BusinessEvents } from '@mx-space/webhook'
 import type { InfiniteData } from '@tanstack/react-query'
-import type { ActivityPresence } from '~/models/activity'
+import { produce } from 'immer'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
+import * as React from 'react'
 
 import { setOnlineCount } from '~/atoms'
-import {
-  deleteActivityPresence,
-  setActivityMediaInfo,
-  setActivityPresence,
-  setActivityProcessInfo,
-} from '~/atoms/activity'
+import { setActivityMediaInfo, setActivityProcessInfo } from '~/atoms/activity'
 import {
   FaSolidFeatherAlt,
   IcTwotoneSignpost,
@@ -44,7 +37,7 @@ import {
   getGlobalCurrentPostData,
   setGlobalCurrentPostData,
 } from '~/providers/post/CurrentPostDataProvider'
-import { queries } from '~/queries/definition'
+import { queryClient } from '~/providers/root/react-query-provider'
 import { buildCommentsQueryKey } from '~/queries/keys'
 import { EventTypes } from '~/types/events'
 
@@ -88,7 +81,7 @@ export const eventHandler = (
         Reflect.deleteProperty(nextPost, 'category')
         Object.assign(draft, nextPost)
       })
-      toast('文章已更新')
+      toast.info('文章已更新')
       trackerRealtimeEvent()
 
       if (currentData.text !== post.text) {
@@ -102,16 +95,15 @@ export const eventHandler = (
       const post = data as PostModel
       if (
         location.pathname ===
-        routeBuilder(Routes.Post, {
-          category: post.category.slug,
-          slug: post.slug,
-        })
+          routeBuilder(Routes.Post, {
+            category: post.category.slug,
+            slug: post.slug,
+          }) &&
+        getGlobalCurrentPostData()?.id === post.id
       ) {
-        if (getGlobalCurrentPostData()?.id === post.id) {
-          router.replace(routeBuilder(Routes.PageDeletd, {}))
-          toast.error('文章已删除')
-          trackerRealtimeEvent()
-        }
+        router.replace(routeBuilder(Routes.PageDeletd, {}))
+        toast.error('文章已删除')
+        trackerRealtimeEvent()
       }
 
       break
@@ -129,7 +121,7 @@ export const eventHandler = (
       setCurrentNoteData((draft) => {
         Object.assign(draft.data, note)
       })
-      toast('手记已更新')
+      toast.info('手记已更新')
       trackerRealtimeEvent()
 
       if (currentData.text !== note.text) {
@@ -143,15 +135,14 @@ export const eventHandler = (
       const note = data as NoteModel
       if (
         location.pathname ===
-        routeBuilder(Routes.Note, {
-          id: note.id,
-        })
+          routeBuilder(Routes.Note, {
+            id: note.id,
+          }) &&
+        getCurrentNoteData()?.data.id === note.id
       ) {
-        if (getCurrentNoteData()?.data.id === note.id) {
-          router.replace(routeBuilder(Routes.PageDeletd, {}))
-          toast.error('手记已删除')
-          trackerRealtimeEvent()
-        }
+        router.replace(routeBuilder(Routes.PageDeletd, {}))
+        toast.error('手记已删除')
+        trackerRealtimeEvent()
       }
 
       break
@@ -164,7 +155,7 @@ export const eventHandler = (
         setCurrentPageData((draft) => {
           Object.assign(draft, data)
         })
-        toast('页面已更新')
+        toast.info('页面已更新')
         trackerRealtimeEvent()
       }
       break
@@ -237,24 +228,6 @@ export const eventHandler = (
       break
     }
 
-    case EventTypes.ACTIVITY_UPDATE_PRESENCE: {
-      const payload = data as ActivityPresence
-      const queryKey = queries.activity.presence(payload.roomName).queryKey
-      const queryState = queryClient.getQueryState(queryKey)
-      queryClient.cancelQueries({
-        queryKey,
-      })
-
-      setActivityPresence(data)
-      if (!queryState?.data) {
-        queryClient.invalidateQueries({
-          queryKey,
-        })
-      }
-
-      break
-    }
-
     case EventTypes.COMMENT_CREATE: {
       const payload = data as {
         ref: string
@@ -281,18 +254,6 @@ export const eventHandler = (
       break
     }
 
-    case EventTypes.ACTIVITY_LEAVE_PRESENCE: {
-      const payload = data as {
-        identity: string
-        roomName: string
-      }
-
-      queryClient.cancelQueries({
-        queryKey: queries.activity.presence(payload.roomName).queryKey,
-      })
-      deleteActivityPresence(payload.identity)
-      break
-    }
     case EventTypes.ARTICLE_READ_COUNT_UPDATE: {
       const { id, count, type } = data
       if (!count) {
@@ -347,7 +308,6 @@ export const eventHandler = (
 
     default: {
       if (isDev) {
-        // eslint-disable-next-line no-console
         console.info(type, data)
       }
     }

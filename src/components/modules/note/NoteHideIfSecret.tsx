@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 'use client'
 
-import { useEffect, useMemo } from 'react'
 import dayjs from 'dayjs'
+import { useEffect, useMemo } from 'react'
 
 import { useIsLogged } from '~/atoms/hooks'
 import { toast } from '~/lib/toast'
@@ -21,12 +19,12 @@ export const NoteHideIfSecret: Component = ({ children }) => {
   useEffect(() => {
     if (!noteId) return
     let timer: any
-    const timeout = +secretDate - +new Date()
+    const timeout = +secretDate - Date.now()
     // https://stackoverflow.com/questions/3468607/why-does-settimeout-break-for-large-millisecond-delay-values
     const MAX_TIMEOUT = (2 ^ 31) - 1
     if (isSecret && timeout && timeout < MAX_TIMEOUT) {
       timer = setTimeout(() => {
-        toast('刷新以查看解锁的文章', 'info', { autoClose: false })
+        toast.info('刷新以查看解锁的文章', { autoClose: false })
       }, timeout)
     }
 
